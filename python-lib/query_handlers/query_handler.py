@@ -25,6 +25,18 @@ class QueryHandler:
         sql_executor.exec_recipe_fragment(output_dataset, query)
         logger.info("Done executing query !")
 
+    def _replace_and_execute(self, table, portion_to_add, output_dataset):
+        query = toSQL(table, dataset=output_dataset)
+
+        logger.info("Replacing with the union all query")
+        import re
+        query = re.sub(r'SELECT \*\s+FROM \"_with_clause_ordered_similarity\"', portion_to_add, query)
+
+        logger.info(f"Executing query:\n{query}")
+        sql_executor = SQLExecutor2(dataset=output_dataset)
+        sql_executor.exec_recipe_fragment(output_dataset, query)
+        logger.info("Done executing query !")
+
     def _rename_table(self, to_rename, renaming_mapping):
         renamed_table = SelectQuery()
         renamed_table.select_from(to_rename, alias="_renamed")
