@@ -1,7 +1,7 @@
 from dataiku.sql import Column, Constant, SelectQuery, toSQL, Window
 from dataiku.core.sql import SQLExecutor2
 import dku_constants as constants
-from dku_dialects import SUPPORTED_DIALECTS, SUPPORTS_FULL_OUTER_JOIN, SUPPORTS_WITH_CLAUSE
+from dku_dialects import SUPPORTED_DIALECTS, SUPPORTS_FULL_OUTER_JOIN, SUPPORTS_WITH_CLAUSE, SUPPORTS_RAND
 from dku_utils import set_column_description
 import logging
 
@@ -90,6 +90,8 @@ class QueryHandler:
             )
         self.supports_full_outer_join = SUPPORTED_DIALECTS[connection_type].get(SUPPORTS_FULL_OUTER_JOIN, False)
         self.supports_with_clause = SUPPORTED_DIALECTS[connection_type].get(SUPPORTS_WITH_CLAUSE, False)
+        self.supports_rand = SUPPORTED_DIALECTS[connection_type].get(SUPPORTS_RAND, False)
+
 
     def _get_unique_dialect(self):
         connection_types, connection_names = [], []

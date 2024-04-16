@@ -159,12 +159,13 @@ class ScoringHandler(QueryHandler):
             Column(self.NB_VISIT_ITEM_AS, table_name=select_from_as).ge(Constant(self.dku_config.item_visit_threshold))
         )
 
-        random_expr = Expression({
-            "type": "OPERATOR",
-            "op": "RAND",
-            "args": []
-        })
-        normalization_factor.order_by(random_expr)
+        if self.supports_rand:
+            random_expr = Expression({
+                "type": "OPERATOR",
+                "op": "RAND",
+                "args": []
+            })
+            normalization_factor.order_by(random_expr) 
 
         return normalization_factor
 
