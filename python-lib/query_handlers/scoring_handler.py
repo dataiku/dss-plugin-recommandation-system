@@ -158,6 +158,15 @@ class ScoringHandler(QueryHandler):
         normalization_factor.where(
             Column(self.NB_VISIT_ITEM_AS, table_name=select_from_as).ge(Constant(self.dku_config.item_visit_threshold))
         )
+
+        if self.supports_rand:
+            random_expr = Expression({
+                "type": "OPERATOR",
+                "op": "RAND",
+                "args": []
+            })
+            normalization_factor.order_by(random_expr) 
+
         return normalization_factor
 
     def _build_similarity(self, select_from):
@@ -180,6 +189,11 @@ class ScoringHandler(QueryHandler):
         if self.supports_with_clause:
             similarity.with_cte(select_from, alias=with_clause_as)
             select_from = with_clause_as
+            # Create a union query to replace this fake select
+            union_query = f"\nSELECT \"{self.based_column}_1\", \"{self.based_column}_2\", \"similarity\" FROM \"{with_clause_as}\"" + \
+                           "\nUNION ALL" + \
+                          f"\nSELECT \"{self.based_column}_2\", \"{self.based_column}_1\", \"similarity\" FROM \"{with_clause_as}\"\n"
+            return similarity.select_from(select_from), union_query
 
         similarity.select_from(select_from, alias=left_select_from_as)
 
@@ -206,7 +220,7 @@ class ScoringHandler(QueryHandler):
             alias=constants.SIMILARITY_COLUMN_NAME,
         )
 
-        return similarity
+        return similarity, ""
 
     def _build_ordered_similarity(self, select_from, with_clause_as="_with_clause_normalization_factor"):
         """Build a similarity table col_1, col_2, similarity where col_1 < col_2 """

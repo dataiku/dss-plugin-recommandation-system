@@ -18,12 +18,16 @@ class AutoScoringHandler(ScoringHandler):
 
         if self.output_similarity_matrix:
             logger.info("About to compute similarity matrix ...")
-            self._execute(similarity, self.file_manager.similarity_scores_dataset)
+            self._replace_and_execute(similarity[0], similarity[1], self.file_manager.similarity_scores_dataset)
+            # self._execute(similarity, self.file_manager.similarity_scores_dataset)
             self._set_column_description(self.file_manager.similarity_scores_dataset, constants.SIMILARITY_COLUMN_NAME)
-            similarity = self.file_manager.similarity_scores_dataset
+            similarity = self.file_manager.similarity_scores_dataset, similarity[1]
+            # similarity = self.file_manager.similarity_scores_dataset
 
-        cf_scores = self._build_collaborative_filtering(similarity, normalization_factor)
-        self._execute(cf_scores, self.file_manager.scored_samples_dataset)
+        cf_scores = self._build_collaborative_filtering(similarity[0], normalization_factor)
+        # cf_scores = self._build_collaborative_filtering(similarity, normalization_factor)
+        self._replace_and_execute(cf_scores, similarity[1], self.file_manager.scored_samples_dataset)
+        # self._execute(cf_scores, self.file_manager.scored_samples_dataset)
         self._set_column_description(self.file_manager.scored_samples_dataset, constants.SCORE_COLUMN_NAME)
 
     def _get_column_descriptions(self, column_name):

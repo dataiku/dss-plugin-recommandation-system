@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.0.5 - Features release - 2024-05
+- Performance improvement
+
+
 ## Version 0.0.4 - Features release - 2023-04
 - Add python 3.8, 3.9, 3.10, 3.11 support
 

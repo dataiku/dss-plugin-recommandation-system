@@ -1,7 +1,7 @@
 from dataiku.sql import Column, Constant, SelectQuery, toSQL, Window
 from dataiku.core.sql import SQLExecutor2
 import dku_constants as constants
-from dku_dialects import SUPPORTED_DIALECTS, SUPPORTS_FULL_OUTER_JOIN, SUPPORTS_WITH_CLAUSE
+from dku_dialects import SUPPORTED_DIALECTS, SUPPORTS_FULL_OUTER_JOIN, SUPPORTS_WITH_CLAUSE, SUPPORTS_RAND
 from dku_utils import set_column_description
 import logging
 
@@ -20,6 +20,18 @@ class QueryHandler:
 
     def _execute(self, table, output_dataset):
         query = toSQL(table, dataset=output_dataset)
+        logger.info(f"Executing query:\n{query}")
+        sql_executor = SQLExecutor2(dataset=output_dataset)
+        sql_executor.exec_recipe_fragment(output_dataset, query)
+        logger.info("Done executing query !")
+
+    def _replace_and_execute(self, table, portion_to_add, output_dataset):
+        query = toSQL(table, dataset=output_dataset)
+
+        logger.info("Replacing with the union all query")
+        import re
+        query = re.sub(r'SELECT \*\s+FROM \"_with_clause_ordered_similarity\"', portion_to_add, query)
+
         logger.info(f"Executing query:\n{query}")
         sql_executor = SQLExecutor2(dataset=output_dataset)
         sql_executor.exec_recipe_fragment(output_dataset, query)
@@ -78,6 +90,8 @@ class QueryHandler:
             )
         self.supports_full_outer_join = SUPPORTED_DIALECTS[connection_type].get(SUPPORTS_FULL_OUTER_JOIN, False)
         self.supports_with_clause = SUPPORTED_DIALECTS[connection_type].get(SUPPORTS_WITH_CLAUSE, False)
+        self.supports_rand = SUPPORTED_DIALECTS[connection_type].get(SUPPORTS_RAND, False)
+
 
     def _get_unique_dialect(self):
         connection_types, connection_names = [], []
